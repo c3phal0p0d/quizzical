@@ -1,5 +1,6 @@
 package c3phal0p0d.projects.quizzical.quiz;
 
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,9 +10,15 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.*;
 
+import c3phal0p0d.projects.quizzical.quiz.QuizRepository;
+
 @RestController
 public class QuizController {
-    private final ArrayList<Quiz> quizzes = new ArrayList<Quiz>();
+    private QuizRepository quizRepository;
+
+    public QuizController(QuizRepository quizRepository) {
+        this.quizRepository = quizRepository;
+    }
 
     @PostMapping("/api/quizzes")
     public ResponseEntity<String> createQuiz(@RequestBody String quizJson){
@@ -19,16 +26,17 @@ public class QuizController {
         objectMapper.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, false);
 
         // create new quiz from input
-        @Valid Quiz quiz;
+        Quiz quiz;
         try {
             quiz = objectMapper.readValue(quizJson, Quiz.class);
 
-            if (quiz.getTitle()==null || quiz.getTitle()=="" || quiz.getText()==null || quiz.getText()=="" || quiz.getOptions()==null || quiz.getOptions().length<2){
+            // check quiz is valid
+            if (quiz.getTitle()==null || Objects.equals(quiz.getTitle(), "") || quiz.getText()==null || quiz.getText()=="" || quiz.getOptions()==null || quiz.getOptions().size()<2){
                 return new ResponseEntity<>("", HttpStatus.BAD_REQUEST);
             }
 
-            quiz.setId(quizzes.size());
-            quizzes.add(quiz);
+            quiz.setId((int) quizRepository.count());
+            quizRepository.save(quiz);
         } catch (JsonProcessingException e) {
             return new ResponseEntity<>("", HttpStatus.BAD_REQUEST);
         }
@@ -44,7 +52,7 @@ public class QuizController {
 
     @GetMapping("/api/quizzes")
     public ArrayList<Quiz> getQuizzes(){
-        return quizzes;
+        return (ArrayList<Quiz>) quizRepository.findAll();
     }
 
     @GetMapping("/api/quizzes/{id}")
@@ -53,9 +61,12 @@ public class QuizController {
 
         // return specified quiz
         try {
-            return new ResponseEntity<>(objectMapper.writeValueAsString(quizzes.get(id)), HttpStatus.OK);
-        } catch (IndexOutOfBoundsException e){
-            return new ResponseEntity<>("", HttpStatus.NOT_FOUND);
+            Quiz quiz = quizRepository.findById(id).orElse(null);
+            if (quiz!=null){
+                return new ResponseEntity<>(objectMapper.writeValueAsString(quiz), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("", HttpStatus.NOT_FOUND);
+            }
         } catch (JsonProcessingException e) {
             return new ResponseEntity<>("", HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -67,10 +78,8 @@ public class QuizController {
         ObjectMapper objectMapper = new ObjectMapper();
 
         // get specified quiz
-        Quiz quiz;
-        try {
-            quiz = quizzes.get(id);
-        } catch (IndexOutOfBoundsException e) {
+        Quiz quiz = quizRepository.findById(id).orElse(null);
+        if (quiz==null) {
             return new ResponseEntity<>("", HttpStatus.NOT_FOUND);
         }
 
@@ -83,7 +92,7 @@ public class QuizController {
         }
 
         // check if input answer is equal to correct answer
-        boolean success = Arrays.equals(quizAnswer.getAnswer(), quiz.getAnswer());
+        boolean success = quizAnswer.getAnswer().equals(quiz.getAnswer());
         String feedback = success ? "Congratulations, you're right!" : "Wrong answer! Please, try again.";
 
         Response response = new Response(success, feedback);

@@ -1,34 +1,48 @@
 package c3phal0p0d.projects.quizzical.quiz;
 
 import com.fasterxml.jackson.annotation.*;
-import jakarta.validation.constraints.*;
 
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+import java.util.Arrays;
+import java.util.List;
+
+@Entity
 public class Quiz {
+    @Id
     private Integer id;
 
     @NotEmpty
+    @Column(nullable = false)
     private String title;
 
     @NotEmpty
+    @Column(nullable = false)
     private String text;
 
     @NotNull
     @Size(min=2)
-    private String[] options;
+    @Column(nullable = false)
+    @ElementCollection
+    private List<String> options;
 
-    private int[] answer;
+    @Column
+    @ElementCollection
+    private List<Integer> answer;
+
+    protected Quiz(){}
 
     public Quiz(
             @JsonProperty("id") int id,
             @JsonProperty("title") String title,
             @JsonProperty("text") String text,
             @JsonProperty("options") String[] options,
-            @JsonProperty("answer") int[] answer) {
+            @JsonProperty("answer") Integer[] answer) {
         this.id = id;
         this.title = title;
         this.text = text;
-        this.options = options;
-        this.answer = answer == null ? new int[]{} : answer;
+        this.options = Arrays.asList(options);
+        this.answer = answer == null ? List.of() : Arrays.asList(answer);
     }
 
     public int getId() {
@@ -57,22 +71,22 @@ public class Quiz {
         this.text = text;
     }
 
-    public String[] getOptions() {
+    public @NotNull @Size(min = 2) List<String> getOptions() {
         return options;
     }
 
     @JsonProperty
     public void setOptions(String[] options) {
-        this.options = options;
+        this.options = Arrays.asList(options);
     }
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    public int[] getAnswer() {
+    public List<Integer> getAnswer() {
         return answer;
     }
 
     @JsonProperty
     public void setAnswer(int answer) {
-        this.answer = new int[]{answer};
+        this.answer = Arrays.asList(answer);
     }
 }
