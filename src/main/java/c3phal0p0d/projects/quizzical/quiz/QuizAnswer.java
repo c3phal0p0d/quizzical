@@ -1,8 +1,8 @@
 package c3phal0p0d.projects.quizzical.quiz;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.validation.constraints.*;
 
-import jakarta.validation.constraints.*;
 import java.util.Arrays;
 import java.util.List;
 

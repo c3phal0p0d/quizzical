@@ -1,16 +1,13 @@
 package c3phal0p0d.projects.quizzical.quiz;
 
-
+import c3phal0p0d.projects.quizzical.user.UserDetailsImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-import java.util.*;
-
-import c3phal0p0d.projects.quizzical.quiz.QuizRepository;
+import java.util.ArrayList;
 
 @RestController
 public class QuizController {
@@ -21,9 +18,8 @@ public class QuizController {
     }
 
     @PostMapping("/api/quizzes")
-    public ResponseEntity<String> createQuiz(@RequestBody String quizJson){
+    public ResponseEntity<String> createQuiz(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody String quizJson){
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, false);
 
         // create new quiz from input
         Quiz quiz;
@@ -31,11 +27,12 @@ public class QuizController {
             quiz = objectMapper.readValue(quizJson, Quiz.class);
 
             // check quiz is valid
-            if (quiz.getTitle()==null || Objects.equals(quiz.getTitle(), "") || quiz.getText()==null || quiz.getText()=="" || quiz.getOptions()==null || quiz.getOptions().size()<2){
+            if (quiz.getTitle()==null || quiz.getTitle()=="" || quiz.getText()==null || quiz.getText()=="" || quiz.getOptions()==null || quiz.getOptions().size()<2){
                 return new ResponseEntity<>("", HttpStatus.BAD_REQUEST);
             }
 
-            quiz.setId((int) quizRepository.count());
+            quiz.setId(quizRepository.count());
+            quiz.setCreator(userDetails.getUser());
             quizRepository.save(quiz);
         } catch (JsonProcessingException e) {
             return new ResponseEntity<>("", HttpStatus.BAD_REQUEST);
@@ -56,7 +53,7 @@ public class QuizController {
     }
 
     @GetMapping("/api/quizzes/{id}")
-    public ResponseEntity<String> getQuiz(@PathVariable int id) {
+    public ResponseEntity<String> getQuiz(@PathVariable Long id) {
         ObjectMapper objectMapper = new ObjectMapper();
 
         // return specified quiz
@@ -74,7 +71,7 @@ public class QuizController {
     }
 
     @PostMapping("/api/quizzes/{id}/solve")
-    public ResponseEntity<String> postResponse(@PathVariable int id, @RequestBody String quizAnswerJson){
+    public ResponseEntity<String> postResponse(@PathVariable Long id, @RequestBody String quizAnswerJson){
         ObjectMapper objectMapper = new ObjectMapper();
 
         // get specified quiz
@@ -102,5 +99,28 @@ public class QuizController {
         } catch (JsonProcessingException e) {
             return new ResponseEntity<>("", HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @DeleteMapping("/api/quizzes/{id}")
+    public ResponseEntity<String> deleteQuiz(@AuthenticationPrincipal UserDetailsImpl userDetails, @PathVariable Long id) {
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        // return specified quiz
+        Quiz quiz = quizRepository.findById(id).orElse(null);
+        if (quiz!=null){
+            if (!quiz.getCreator().getUsername().equals(userDetails.getUser().getUsername())){
+                return new ResponseEntity<>("user: " + userDetails.getUser() + " creator: " + quiz.getCreator(), HttpStatus.FORBIDDEN);
+            }
+            quizRepository.delete(quiz);
+            return new ResponseEntity<>("", HttpStatus.NO_CONTENT);
+        } else {
+            return new ResponseEntity<>("", HttpStatus.NOT_FOUND);
+        }
+
+    }
+
+    @PostMapping("/actuator/shutdown")
+    public void shutdown() {
+
     }
 }

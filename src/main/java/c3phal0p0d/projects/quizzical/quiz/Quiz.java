@@ -1,16 +1,22 @@
 package c3phal0p0d.projects.quizzical.quiz;
 
-import com.fasterxml.jackson.annotation.*;
+import c3phal0p0d.projects.quizzical.user.User;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import javax.persistence.*;
+import javax.validation.constraints.*;
+
 import java.util.Arrays;
 import java.util.List;
 
 @Entity
 public class Quiz {
     @Id
-    private Integer id;
+    private Long quizId;
+
+    @ManyToOne
+    @JoinColumn(name = "userId")
+    private User creator;
 
     @NotEmpty
     @Column(nullable = false)
@@ -33,24 +39,35 @@ public class Quiz {
     protected Quiz(){}
 
     public Quiz(
-            @JsonProperty("id") int id,
+            @JsonProperty("id") Long quizId,
+            @JsonProperty("creator") User creator,
             @JsonProperty("title") String title,
             @JsonProperty("text") String text,
             @JsonProperty("options") String[] options,
             @JsonProperty("answer") Integer[] answer) {
-        this.id = id;
+        this.quizId = quizId;
+        this.creator = creator;
         this.title = title;
         this.text = text;
         this.options = Arrays.asList(options);
         this.answer = answer == null ? List.of() : Arrays.asList(answer);
     }
 
-    public int getId() {
-        return id;
+    public Long getId() {
+        return quizId;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setId(Long id) {
+        this.quizId = id;
+    }
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    public User getCreator() {
+        return creator;
+    }
+
+    public void setCreator(User creator){
+        this.creator = creator;
     }
 
     public String getTitle() {
@@ -87,6 +104,6 @@ public class Quiz {
 
     @JsonProperty
     public void setAnswer(int answer) {
-        this.answer = Arrays.asList(answer);
+        this.answer = List.of(answer);
     }
 }
