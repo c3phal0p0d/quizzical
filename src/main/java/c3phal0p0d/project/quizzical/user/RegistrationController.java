@@ -1,4 +1,4 @@
-package c3phal0p0d.projects.quizzical.user;
+package c3phal0p0d.project.quizzical.user;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,7 +38,8 @@ public class RegistrationController {
 
         user.setPassword(encoder.encode(user.getPassword()));
         user.setRole("ROLE_USER");
-        user.setId(userRepository.count());
+        //user.setId(userRepository.count());
+
 
         if (userRepository.findUserByUsername(user.getUsername()).isPresent()){
             return new ResponseEntity<>("", HttpStatus.BAD_REQUEST);

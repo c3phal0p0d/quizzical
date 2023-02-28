@@ -1,4 +1,4 @@
-package c3phal0p0d.projects.quizzical.quiz;
+package c3phal0p0d.project.quizzical.quiz;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.validation.constraints.*;

@@ -1,4 +1,4 @@
-package c3phal0p0d.projects.quizzical;
+package c3phal0p0d.project.quizzical;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

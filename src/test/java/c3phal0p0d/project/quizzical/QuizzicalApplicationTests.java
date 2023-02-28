@@ -1,4 +1,4 @@
-package c3phal0p0d.projects.quizzical;
+package c3phal0p0d.project.quizzical;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

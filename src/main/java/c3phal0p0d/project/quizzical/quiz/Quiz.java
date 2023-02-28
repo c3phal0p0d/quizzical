@@ -1,6 +1,6 @@
-package c3phal0p0d.projects.quizzical.quiz;
+package c3phal0p0d.project.quizzical.quiz;
 
-import c3phal0p0d.projects.quizzical.user.User;
+import c3phal0p0d.project.quizzical.user.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;

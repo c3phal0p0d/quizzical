@@ -1,4 +1,4 @@
-package c3phal0p0d.projects.quizzical.quiz;
+package c3phal0p0d.project.quizzical.quiz;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;

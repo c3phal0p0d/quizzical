@@ -1,6 +1,6 @@
-package c3phal0p0d.projects.quizzical.quiz;
+package c3phal0p0d.project.quizzical.quiz;
 
-import c3phal0p0d.projects.quizzical.user.UserDetailsImpl;
+import c3phal0p0d.project.quizzical.user.UserDetailsImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.*;
